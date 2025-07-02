@@ -5,6 +5,7 @@ import entity.Products;
 import entity.StatictisByCatalog;
 
 import java.sql.ResultSet;
+import java.sql.SQLOutput;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -24,8 +25,9 @@ public class ProductService {
 
     }
 
+
     // kiểm tra sự tồn tại tên sản phẩm
-    public static int isProductNameExist(Scanner scanner) {
+    public static int isProductNameExist2(Scanner scanner) {
 
         System.out.println("Nhập tên sản phẩm cần kiểm tra");
         String productName = scanner.nextLine();
@@ -36,10 +38,10 @@ public class ProductService {
             return check;
         } else {
             System.out.println("Sản phẩm không tồn tại, vui lòng thử lại");
-
         }
         return check;
     }
+
 
     //addproduct
     public static void addProduct(Scanner scanner) {
@@ -66,34 +68,87 @@ public class ProductService {
 
     //update product
     public static void updateProduct(Scanner scanner) {
-        Products products = new Products();
         System.out.println("Nhập vào ID product cần update");
         int id = Integer.parseInt(scanner.nextLine());
-        Boolean product = ProductDao.getProductById(id);
-        if (product) {
+        Products product = ProductDao.getProductById(id);
+        if (product == null) {
             System.out.println("ID không tồn tại vui lòng kiểm tra lại");
-
+            return;
         } else {
-            products.setProductId(id);
-            System.out.println("Nhập tên mới:");
-            products.setProductName(scanner.nextLine());
-            System.out.println("Nhập giá mới:");
-            products.setProductPrice(Float.parseFloat(scanner.nextLine()));
-            System.out.println("Nhập tiêu đề mới");
-            products.setProduct_Title(scanner.nextLine());
-            System.out.println("Nhập ngày tạo ");
-            products.setProdcutCreated(LocalDate.parse(scanner.nextLine()));
-            System.out.println("Nhập tên danh mục mới");
-            products.setProductCatalog(scanner.nextLine());
-            System.out.println("Nhập trạng thái mới (true/false)");
-            products.setProductStatus(Boolean.parseBoolean(scanner.nextLine()));
+            Boolean isExit = false;
+            do {
+                System.out.println("***** Cập Nhật *****");
+                System.out.println("1. Cập nhật tên");
+                System.out.println("2. Cập nhật giá");
+                System.out.println("3. Cập nhật tiêu đề");
+                System.out.println("4. Cập nhật ngày tạo");
+                System.out.println("5. Cập nhật danh mục mới ");
+                System.out.println("6. Cập nhật trạng thái");
+                System.out.println("7. Thoát");
 
-            Boolean result = ProductDao.updateProducts(products);
-            if (result) {
-                System.out.println("Cập nhật thành công");
-            } else {
-                System.err.println("Có lỗi trong quá trình cập nhật");
-            }
+                int choice = Integer.parseInt(scanner.nextLine());
+
+                switch (choice) {
+                    case 1:
+                        do {
+                            System.out.println("Nhập tên mới");
+                            String name = scanner.nextLine();
+                            if (Validate.validateName(name)) {
+                                product.setProductName(name);
+                                break;
+                            } else {
+                                System.err.println("Tên không được để trống, không trùng lặp, độ dài không vượt quá 100 ký tự, vui lòng nhập lại");
+                            }
+                        } while (true);
+                        break;
+                    case 2:
+                        do {
+                            System.out.println("Nhập giá mới:");
+                            String price = scanner.nextLine();
+                            if (Validate.validatePrice(price)) {
+                                product.setProductPrice(Float.valueOf(price));
+                                break;
+                            } else {
+                                System.out.println("Giá phải lớn hơn 0, là số nguyên và không được trống");
+                            }
+                        } while (true);
+                        break;
+                    case 3:
+                        System.out.println("Nhập tiêu đề mới");
+                        String title = scanner.nextLine();
+                        if (Validate.validateTitle(title)) {
+                            product.setProduct_Title(title);
+                            break;
+                        }else {
+                            System.err.println("Tiêu đề không được trống, tối đa 200 ký tự");
+                        }
+                        break;
+                    case 4:
+                        System.out.println("Nhập ngày tạo ");
+                        product.setProdcutCreated(LocalDate.parse(scanner.nextLine()));
+                        break;
+                    case 5:
+                        System.out.println("Nhập tên danh mục mới");
+                        product.setProductCatalog(scanner.nextLine());
+                        break;
+                    case 6:
+                        System.out.println("Nhập trạng thái mới (true/false)");
+                        product.setProductStatus(Boolean.parseBoolean(scanner.nextLine()));
+                        break;
+                    case 7:
+                        isExit = true;
+                        break;
+                    default:
+                        System.out.println("Vui lòng chọn từ 1-7");
+                }
+            } while (isExit);
+        }
+
+        Boolean productUpdate = ProductDao.updateProducts(product);
+        if (productUpdate) {
+            System.out.println("Cập nhật thành công");
+        } else {
+            System.err.println("Có lỗi trong quá tình cập nhật");
         }
     }
 
@@ -101,8 +156,8 @@ public class ProductService {
     public static void deleteProduct(Scanner scanner) {
         System.out.println("Nhập ID product cần xoá");
         int id = Integer.parseInt(scanner.nextLine());
-        boolean product = ProductDao.getProductById(id);
-        if (product) {
+        Products product = ProductDao.getProductById(id);
+        if (product != null) {
             Boolean result = ProductDao.deleteProductById(id);
             if (result) {
                 System.out.println("Xoá thành công Product có ID là " + id);
@@ -134,11 +189,10 @@ public class ProductService {
 
     //thống kê soos lượng theo danh mục
 
-    public static void statictisProDuct(){
+    public static void statictisProDuct() {
         List<StatictisByCatalog> listStatictis = ProductDao.statictisByCatalog();
         listStatictis.forEach(System.out::println);
     }
-
 
 
 }
