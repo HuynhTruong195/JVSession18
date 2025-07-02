@@ -50,7 +50,7 @@ public class ProductDao {
             conn = ConnectionDb.getConnection();
             callStmt = conn.prepareCall("{call check_name_isExist(?,?)}");
             callStmt.setString(1, productName);
-            callStmt.registerOutParameter(2, Types.VARCHAR);
+            callStmt.registerOutParameter(2, Types.INTEGER);
             callStmt.execute();
 
             return callStmt.getInt(2);
@@ -62,6 +62,7 @@ public class ProductDao {
         }
         return -1;
     }
+
 
     //thêm mới
     public static Boolean addProducts(Products products) {
@@ -119,16 +120,15 @@ public class ProductDao {
     }
 
     //getproductbyID
-    public static Boolean getProductById(int id) {
+    public static Products getProductById(int id) {
+//        List<Products> productList =  null;
         Connection conn = null;
         CallableStatement callStmt = null;
         Products product = null;
-        Boolean result = false;
         try {
             conn = ConnectionDb.getConnection();
             callStmt = conn.prepareCall("{call get_product_byid(?)}");
             callStmt.setInt(1, id);
-            callStmt.executeQuery();
             ResultSet rs = callStmt.executeQuery();
             while (rs.next()) {
                 product = new Products();
@@ -139,7 +139,7 @@ public class ProductDao {
                 product.setProdcutCreated(rs.getDate("product_created").toLocalDate());
                 product.setProductCatalog(rs.getString("product_catalog"));
                 product.setProductStatus(rs.getBoolean("product_status"));
-                result = true;
+
             }
 
         } catch (Exception e) {
@@ -147,10 +147,19 @@ public class ProductDao {
         } finally {
             ConnectionDb.closeConnection(conn, callStmt);
         }
-
-
-        return result;
+        return product;
     }
+
+//    public static void main(String[] args) {
+//        try {
+//            System.out.println(getProductById(13));
+//
+//        } catch (NullPointerException e) {
+//            e.printStackTrace();
+//            System.out.println("lỗi null");
+//        }
+//    }
+
 
     //delete product
     public static Boolean deleteProductById(int id) {
